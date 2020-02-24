@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.os.Bundle;
 import android.view.View;
@@ -29,13 +30,15 @@ public class MainActivity extends AppCompatActivity {
     ConstraintLayout constraintLayout;
     TextView storeText;
     ImageView upgradeImage;
+    ImageView bigSuperCharger;
     TextView passiveIncomeText;
-    TextView numSuperChargersText;
     boolean chargerVisible = false;
     int numSuperChargers;
     Switch levelSwitch;
     boolean isEasyLevel;
     final ScaleAnimation upgradeAnimation = new ScaleAnimation(1.0f, 1.5f, 1.0f, 1.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+    final ScaleAnimation bigUpgradeAnimation = new ScaleAnimation(1.0f, 1.2f, 1.0f, 1.2f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,13 +46,14 @@ public class MainActivity extends AppCompatActivity {
         mainTesla = findViewById(R.id.id_mainTesla);
         teslaValuationText = findViewById(R.id.id_teslaValuationText);
         passiveIncomeText = findViewById(R.id.id_passiveIncomeTest);
-        numSuperChargersText = findViewById(R.id.id_numSuperChargersText);
         valuation = new AtomicInteger(0);
         passiveIncome = 0;
         numSuperChargers = 0;
         constraintLayout = findViewById(R.id.layout);
         storeText = findViewById(R.id.id_storeText);
         levelSwitch = findViewById(R.id.id_levelSwitch);
+        bigSuperCharger = findViewById(R.id.id_bigSuperCharger);
+        bigSuperCharger.setVisibility(View.INVISIBLE);
 
         SuperCharger superChargerThread = new SuperCharger();
         superChargerThread.start();
@@ -59,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
         hardLevelThread.start();
 
         upgradeAnimation.setDuration(250);
+        bigUpgradeAnimation.setDuration(500);
+
 
         isEasyLevel = true;
         levelSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -133,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         teslaValuationText.setText("Tesla's Valuation: $ " + valuation);
                         passiveIncomeText.setText("Passive Income: $" + passiveIncome + "/sec");
-                        numSuperChargersText.setText("Number of SuperChargers: " + numSuperChargers);
+                        storeText.setText(numSuperChargers + " SuperChargers");
                     }
                 });
 
@@ -180,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
                             upgradeImage.setImageResource(R.drawable.supercharger);
                             upgradeImage.setId(View.generateViewId());
                             upgradeImage.setVisibility(View.VISIBLE);
+                            bigSuperCharger.setVisibility(View.VISIBLE);
                             ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
                             upgradeImage.setLayoutParams(params);
                             constraintLayout.addView(upgradeImage);
@@ -192,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
                             upgradeConstraintSet.connect(upgradeImage.getId(), ConstraintSet.RIGHT, constraintLayout.getId(), ConstraintSet.RIGHT);
 
                             upgradeConstraintSet.setHorizontalBias(upgradeImage.getId(), 0);
-                            upgradeConstraintSet.setVerticalBias(upgradeImage.getId(), 0.75f);
+                            upgradeConstraintSet.setVerticalBias(upgradeImage.getId(), 0.25f);
 
                             upgradeConstraintSet.applyTo(constraintLayout);
 
@@ -205,6 +212,11 @@ public class MainActivity extends AppCompatActivity {
                                         passiveIncome+=50;
                                         numSuperChargers+=1;
                                         valuation.addAndGet(-1000);
+
+                                        TranslateAnimation upgradeTranslateAnimation = new TranslateAnimation(0f, 250, 0, 700);
+                                        upgradeTranslateAnimation.setDuration(500);
+                                        view.startAnimation(upgradeTranslateAnimation);
+                                        bigSuperCharger.startAnimation(bigUpgradeAnimation);
                                     }
                                     else{
                                         Toast insufficientToast = Toast.makeText(MainActivity.this, "You Cannot Afford a SuperCharger!", Toast.LENGTH_SHORT);
